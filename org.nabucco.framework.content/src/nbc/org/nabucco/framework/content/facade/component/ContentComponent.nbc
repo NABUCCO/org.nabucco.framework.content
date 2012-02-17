@@ -1,0 +1,79 @@
+/*
+* Copyright 2011 PRODYNA AG
+*
+* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.opensource.org/licenses/eclipse-1.0.php or
+* http://www.nabucco-source.org/nabucco-license.html
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+package org.nabucco.framework.content.facade.component; 
+
+import org.nabucco.framework.content.facade.datatype.ContentData;
+import org.nabucco.framework.content.facade.datatype.ContentEntryElement;
+import org.nabucco.framework.content.facade.datatype.ContentFolder;
+import org.nabucco.framework.content.facade.datatype.ContentMaster;
+import org.nabucco.framework.content.facade.datatype.ContentRelation;
+import org.nabucco.framework.content.facade.datatype.ExternalData;
+import org.nabucco.framework.content.facade.datatype.InternalData;
+import org.nabucco.framework.content.facade.service.maintain.MaintainContent;
+import org.nabucco.framework.content.facade.service.produce.ProduceContent;
+import org.nabucco.framework.content.facade.service.resolve.ResolveContent;
+import org.nabucco.framework.content.facade.service.search.SearchContent;
+
+@Author         Nicolas Moser
+@Company        PRODYNA AG
+@Date           2011-12-14
+@Version        1.0
+@Description    Content Component allows maintenance, resolution and delivery of content.
+public Component ContentComponent {
+
+	/* Persistent Datatypes */
+	
+	@Description		Content Entry Master.
+	public persistent Datatype ContentMaster[0..*] contentMasters;
+	
+	@Description		Abstract Content Entry.
+	public persistent Datatype ContentEntryElement[0..*] contentEntries;
+	
+	@Description		Relation between Content Entries.
+	public persistent Datatype ContentRelation[0..*] contentRelations;
+	
+    @Referenceable
+	@Description		Internal Database Storage.
+	public persistent Datatype InternalData[0..*] internalData;
+	
+    @Referenceable
+	@Description		External System Storage.
+	public persistent Datatype ExternalData[0..*] externalData;
+	
+    @Referenceable
+	@Description		Group of Content Entries.
+	public persistent Datatype ContentFolder[0..*] contentGroups;
+	
+	@Description		Content Data.
+	public persistent Datatype ContentData[0..*] contentData;
+	
+	
+	/* Services */
+
+	@Description		Maintain Service for Content Entries.
+	public Service MaintainContent;
+	 
+	@Description		Produce Service for Content Entries.
+	public Service ProduceContent; 
+
+	@Description		Resolve Service for Content Entries.
+	public Service ResolveContent; 
+
+	@Description		Search Service for Content Entries.
+	public Service SearchContent;
+	
+}

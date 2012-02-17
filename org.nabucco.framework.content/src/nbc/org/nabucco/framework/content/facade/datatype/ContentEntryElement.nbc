@@ -1,0 +1,87 @@
+/*
+* Copyright 2011 PRODYNA AG
+*
+* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.opensource.org/licenses/eclipse-1.0.php or
+* http://www.nabucco-source.org/nabucco-license.html
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+package org.nabucco.framework.content.facade.datatype; 
+
+import org.nabucco.framework.base.facade.datatype.Description;
+import org.nabucco.framework.base.facade.datatype.FunctionalIdentifier;
+import org.nabucco.framework.base.facade.datatype.Owner;
+import org.nabucco.framework.base.facade.datatype.StatusType;
+import org.nabucco.framework.base.facade.datatype.Version;
+import org.nabucco.framework.base.facade.datatype.code.Code;
+import org.nabucco.framework.base.facade.datatype.content.ContentEntry;
+import org.nabucco.framework.base.facade.datatype.date.Date;
+import org.nabucco.framework.base.facade.datatype.date.Timestamp;
+import org.nabucco.framework.base.facade.datatype.security.UserId;
+import org.nabucco.framework.content.facade.datatype.ContentMaster;
+import org.nabucco.framework.content.facade.datatype.ContentRelation;
+
+
+@Author         Nicolas Moser
+@Company        PRODYNA AG
+@Date           2011-12-11
+@Version        1.0
+@Description    Data Storage Definition Datatype
+public abstract Datatype ContentEntryElement extends ContentEntry {
+	
+	@Description		Owner of the content entry.
+	private Basetype Owner[1] owner;
+	
+	@Description		Timestamp of the content creation.
+    private Basetype Timestamp[1] creationTime;
+
+	@Description		User ID of the content creation.
+	private Basetype UserId[1] creator;
+
+	@Description		Timestamp of the last content modification.
+    private Basetype Timestamp[1] modificationTime;
+
+	@Description		User ID of the last content modification.
+	private Basetype UserId[1] modifier;
+	
+	@Description		Description of the content entry.
+	private Basetype Description[0..1] description;
+	
+	@Description		Content Master
+	@FetchStrategy		EAGER
+	private Datatype ContentMaster[0..1] master; 
+	
+	@Default			ACTIVE
+	@Description		Status of the Content Entry.
+	private Enumeration StatusType[1] statusType;
+	
+	@Description		Content entry validity date.
+	private Basetype Date[0..1] validityDate;
+
+	@Description		Functional Content Entry ID.
+	private Basetype FunctionalIdentifier[0..1] contentEntryId;
+	
+	@Default			0
+	@Description		Version of the Content Entry.
+	private Basetype Version[1] contentEntryVersion;
+	
+	@CodePath			nabucco.framework.content.entrytype
+	@Description		Type of the Content Entry.
+	private Datatype Code[0..1] contentEntryType;
+	
+	@CodePath			nabucco.framework.content.categorytype
+	@Description		Category Type of the Content Entry.
+	private Datatype Code[0..1] contentCategoryType;
+
+	@Description		List of Content Relations.
+	private Datatype ContentRelation[0..*] contentRelations;
+
+}

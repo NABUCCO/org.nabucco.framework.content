@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+	Copyright 2011 PRODYNA AG
+
+	Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	http://www.opensource.org/licenses/eclipse-1.0.php or
+	http://nabuccosource.org/License.html
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+
+<xsd:schema
+	targetNamespace="org.nabucco.ui.dialog"
+	elementFormDefault="qualified"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="org.nabucco.ui.dialog"
+	xmlns:bts="org.nabucco.bootstrap"
+	xmlns:base="org.nabucco">
+
+
+	<xsd:import
+		schemaLocation="../org.nabucco.xsd"
+		namespace="org.nabucco"></xsd:import>
+	<xsd:element
+		name="extension"
+		type="DialogExtensionType">
+
+	</xsd:element>
+
+
+	<xsd:complexType
+		name="ButtonType">
+		<xsd:attribute
+			name="id"
+			type="xsd:string"
+			use="required"></xsd:attribute>
+		<xsd:attribute
+			name="actionId"
+			type="base:ActionIdType"
+			use="optional">
+		</xsd:attribute>
+
+		<xsd:attribute
+			name="label"
+			type="xsd:string"
+			use="required"></xsd:attribute>
+		<xsd:attribute
+			name="icon"
+			type="xsd:string"
+			use="optional"></xsd:attribute>
+		<xsd:attribute
+			name="tooltip"
+			type="xsd:string"
+			use="required">
+		</xsd:attribute>
+		<xsd:attribute
+			name="validate"
+			type="xsd:boolean"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The model need to be valid before the operation can
+					proceed
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+
+
+
+
+
+	<xsd:complexType
+		name="ControlType">
+		<xsd:attribute
+			name="id"
+			type="xsd:string"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>
+					The id of the control
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+
+		<xsd:attribute
+			name="label"
+			type="xsd:string"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>The label to show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute
+			name="tooltip"
+			type="xsd:string"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>
+					The tooltip to show
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute
+			name="position"
+			type="xsd:string"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>
+					The position in the grid
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute
+			name="mandatory"
+			type="xsd:boolean"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The position in the grid cell
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+
+
+
+	</xsd:complexType>
+
+
+
+
+
+
+	<xsd:complexType
+		name="DialogType">
+		<xsd:sequence
+			minOccurs="1"
+			maxOccurs="1">
+			<xsd:element
+				name="controls"
+				type="ControlGridType"
+				maxOccurs="1"
+				minOccurs="0">
+			</xsd:element>
+			<xsd:element
+				name="button"
+				type="ButtonType"
+				maxOccurs="unbounded"
+				minOccurs="0">
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute
+			name="title"
+			type="xsd:string"></xsd:attribute>
+		<xsd:attribute
+			name="icon"
+			type="xsd:string"></xsd:attribute>
+		<xsd:attribute
+			name="message"
+			type="xsd:string"></xsd:attribute>
+		<xsd:attribute
+			name="type">
+			<xsd:simpleType>
+				<xsd:restriction
+					base="xsd:string">
+					<xsd:enumeration
+						value="GRID"></xsd:enumeration>
+					<xsd:enumeration
+						value="MESSAGE"></xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+
+
+	<xsd:complexType
+		name="ControlGridType">
+        <xsd:choice maxOccurs="unbounded" minOccurs="1">
+			<xsd:element name="text" type="TextControlType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="textarea" type="TextAreaType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="checkbox" type="CheckBoxType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="textlink" type="TextLinkType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="dropdown" type="DropDownType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="file" type="FileType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="date" type="DateType" maxOccurs="1" minOccurs="1">
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attribute
+			name="grid"
+			type="xsd:string"
+			use="required"></xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="DialogExtensionType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="base:ExtensionType">
+				<xsd:sequence>
+					<xsd:element
+						name="dialog"
+						type="DialogType"></xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="TextControlType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="ControlType"></xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="TextAreaType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="ControlType"></xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="CheckBoxType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="ControlType"></xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="TextLinkType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="ControlType">
+				<xsd:attribute
+					name="url"
+					type="xsd:string"
+					use="optional"></xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="DropDownType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="ControlType"></xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="FileType">
+		<xsd:complexContent>
+			<xsd:extension base="ControlType">
+				<xsd:attribute
+					name="extensionFilter"
+					use="required">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:minLength value="1"></xsd:minLength>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType
+		name="DateType">
+		<xsd:complexContent>
+			<xsd:extension
+				base="ControlType"></xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>
