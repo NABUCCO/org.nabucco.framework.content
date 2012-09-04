@@ -16,6 +16,7 @@
  */
 package org.nabucco.framework.content.ui.web;
 
+import org.nabucco.framework.base.facade.datatype.Data;
 import org.nabucco.framework.base.facade.datatype.DatatypeState;
 import org.nabucco.framework.base.facade.datatype.NabuccoSystem;
 import org.nabucco.framework.base.facade.datatype.content.ContentEntry;
@@ -99,12 +100,22 @@ public class ContentResourceServlet extends ResourceServlet {
 
             case INTERNAL_DATA: {
                 InternalData internalData = (InternalData) entry;
-                return internalData.getData().getData().getValue();
+                ContentData data = internalData.getData();
+                if (data == null) {
+                    return null;
+                } else if (data.getData() == null) {
+                    return null;
+                }
+                return data.getData().getValue();
             }
 
             case EXTERNAL_DATA: {
                 ExternalData externalData = (ExternalData) entry;
-                return externalData.getData().getValue();
+                Data data = externalData.getData();
+                if (data == null) {
+                    return null;
+                }
+                return data.getValue();
             }
             default: {
                 throw new ClientException("Cannot resolve data entry. The type is not supported yet.");
@@ -160,15 +171,12 @@ public class ContentResourceServlet extends ResourceServlet {
     }
 
     @Override
-    protected String writeData(String originalFilename, String instanceId, byte[] data, NabuccoWebSession session)
+    protected ContentEntry writeData(String originalFilename, String instanceId, byte[] data, NabuccoWebSession session)
             throws ClientException {
 
         // Creates a temp file
-        if (instanceId == null || instanceId.length() == 0) {
-            instanceId = NabuccoSystem.createUUID();
-        }
-        String filename = instanceId;
-        InternalData newContentElement = (InternalData) produceContentElement(ContentEntryType.INTERNAL_DATA, session);
+        InternalData newContentElement = (InternalData) this.produceContentElement(ContentEntryType.INTERNAL_DATA,
+                session);
 
         ContentData contentData = new ContentData();
         contentData.setData(data);
@@ -181,19 +189,17 @@ public class ContentResourceServlet extends ResourceServlet {
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf(EXTENSION_SEPARATOR) + 1,
                     originalFilename.length());
             newContentElement.setFileExtension(fileExtension);
-            filename = filename.concat(EXTENSION_SEPARATOR);
-            filename = filename.concat(fileExtension);
         }
 
-        String path = TEMP_FOLDER + PATH_SEPARATOR + filename;
+        String path = TEMP_FOLDER + PATH_SEPARATOR + instanceId + PATH_SEPARATOR + originalFilename;
 
-        newContentElement.getMaster().setName(filename);
-        newContentElement.setName(filename);
+        newContentElement.getMaster().setName(originalFilename);
+        newContentElement.setName(originalFilename);
         newContentElement.setData(contentData);
         newContentElement.setCreationTime(NabuccoSystem.getCurrentTimestamp());
-        newContentElement = (InternalData) maintainContentElement(newContentElement, path, session);
+        newContentElement = (InternalData) this.maintainContentElement(newContentElement, path, session);
 
-        return TEMP_FOLDER + PATH_SEPARATOR + filename;
+        return newContentElement;
     }
 
     /**

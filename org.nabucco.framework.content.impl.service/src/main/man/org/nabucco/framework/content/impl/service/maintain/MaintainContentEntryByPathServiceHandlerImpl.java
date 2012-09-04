@@ -16,6 +16,10 @@
  */
 package org.nabucco.framework.content.impl.service.maintain;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 import org.nabucco.framework.base.facade.component.connection.ConnectionException;
 import org.nabucco.framework.base.facade.datatype.Data;
 import org.nabucco.framework.base.facade.datatype.DatatypeState;
@@ -42,8 +46,8 @@ import org.nabucco.framework.content.facade.message.ContentEntryMsg;
 import org.nabucco.framework.content.facade.message.produce.ContentEntryPrototypeRq;
 import org.nabucco.framework.content.facade.service.maintain.MaintainContent;
 import org.nabucco.framework.content.facade.service.produce.ProduceContent;
-import org.nabucco.framework.content.facade.service.resolve.ResolveContent;
 import org.nabucco.framework.content.impl.service.resolve.ContentPathResolver;
+import org.nabucco.framework.content.impl.service.resolve.common.ResolveUtility;
 
 /**
  * Maintains the given content entry to the given path.
@@ -72,33 +76,40 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
         try {
             // Try to find content if possible
             InternalData sourceEntry = (InternalData) rq.getEntry();
-            InternalData targetItem = (InternalData) resolveContentByPath(path.getValue());
+            InternalData targetItem = (InternalData) this.resolveContentByPath(path.getValue());
+
+            if (rq.getRemoveSource() != null && rq.getRemoveSource().getValue() == true) {
+                this.clearReferences(sourceEntry);
+            }
 
             if (targetItem == null) {
                 String fullPath = path.getValue();
                 String folderPath = fullPath.substring(0, fullPath.lastIndexOf(PATH_SEPARATOR));
                 String filename = fullPath.substring(fullPath.lastIndexOf(PATH_SEPARATOR) + 1, fullPath.length());
 
-                // If the item is new, than clone it to a new
-                targetItem = (InternalData) produceContentElement(ContentEntryType.INTERNAL_DATA);
+                targetItem = sourceEntry;
 
                 // Copy data
-                targetItem.setName(sourceEntry.getName());
-                targetItem.setFileExtension(sourceEntry.getFileExtension());
-                targetItem.setOwner(sourceEntry.getOwner());
                 targetItem.setModificationTime(NabuccoSystem.getCurrentTimestamp());
                 targetItem.setCreationTime(NabuccoSystem.getCurrentTimestamp());
                 targetItem.setName(filename);
+
+                if (targetItem.getMaster() == null) {
+                    ContentMaster master = new ContentMaster();
+                    master.setOwner(super.getContext().getOwner());
+                    master.setTenant(super.getContext().getTenant());
+                    master.setDatatypeState(DatatypeState.INITIALIZED);
+                    targetItem.setMaster(master);
+                }
+
                 targetItem.getMaster().setName(filename);
 
-                targetItem = copyContentData(sourceEntry, targetItem);
-                copyMasterData(sourceEntry, targetItem);
                 // Maintain target
-                targetItem = (InternalData) this.maintainContentEntry(targetItem);
+                targetItem = this.maintainContentEntry(targetItem);
                 targetItem.getContentRelations().size();
 
                 // Place target in the correct folder
-                ContentFolder folder = resolveFolderStructure(folderPath);
+                ContentFolder folder = this.resolveFolderStructure(folderPath);
                 ContentRelation contentRelation = new ContentRelation();
                 contentRelation.setTarget(targetItem);
                 contentRelation.setDatatypeState(DatatypeState.INITIALIZED);
@@ -114,8 +125,8 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
                 targetItem.setModificationTime(NabuccoSystem.getCurrentTimestamp());
                 targetItem.setDatatypeState(DatatypeState.MODIFIED);
 
-                targetItem = copyContentData(sourceEntry, targetItem);
-                targetItem = (InternalData) this.maintainContentEntry(targetItem);
+                targetItem = this.copyContentData(sourceEntry, targetItem);
+                targetItem = this.maintainContentEntry(targetItem);
                 targetItem.getContentRelations().size();
             }
 
@@ -127,6 +138,36 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
         } catch (Exception e) {
             throw new MaintainException("Error maintaining content entry with id '" + rq.getEntry().getId() + "'.", e);
         }
+    }
+
+    /**
+     * Searches and clears references to the given content entry
+     * 
+     * @param sourceEntry
+     *            the
+     * @throws PersistenceException
+     */
+    private void clearReferences(InternalData sourceEntry) throws PersistenceException {
+        if (sourceEntry.getDatatypeState() == DatatypeState.INITIALIZED) {
+            return;
+        }
+        if (sourceEntry.getDatatypeState() == DatatypeState.CONSTRUCTED) {
+            return;
+        }
+
+        ResolveUtility resUtility = new ResolveUtility(this.getPersistenceManager(), this.getContext());
+        List<ContentFolder> relations = resUtility.findRelations(sourceEntry);
+
+        for (ContentFolder folder : relations) {
+            for (ContentRelation relation : folder.getContentRelations()) {
+                if (relation.getTarget().getId().equals(sourceEntry.getId())) {
+                    relation.setDatatypeState(DatatypeState.DELETED);
+                }
+            }
+
+            this.maintainContentEntry(folder);
+        }
+
     }
 
     /**
@@ -142,8 +183,9 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
      */
     private InternalData copyContentData(InternalData sourceEntry, InternalData targetEntry)
             throws PersistenceException {
+        ResolveUtility resolveUtil = new ResolveUtility(this.getPersistenceManager(), super.getContext());
         try {
-            sourceEntry = resolveEntryData(sourceEntry);
+            sourceEntry = resolveUtil.resolveInternalDataContent(sourceEntry);
 
             // Copy content of the source item to target item
             if (sourceEntry.getData() != null) {
@@ -155,7 +197,7 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
                     targetData.setData(data);
                     targetEntry.setData(targetData);
                 } else {
-                    targetEntry = resolveEntryData(targetEntry);
+                    targetEntry = resolveUtil.resolveInternalDataContent(targetEntry);
                     ContentData targetData = targetEntry.getData();
                     targetData.setDatatypeState(DatatypeState.MODIFIED);
                     targetData.setData(data);
@@ -165,61 +207,9 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
 
             return targetEntry;
 
-        } catch (ServiceException e) {
+        } catch (PersistenceException e) {
             throw new PersistenceException("Cannot maintain item", e);
-        } catch (ConnectionException e) {
-            throw new PersistenceException("Cannot create connection", e);
         }
-    }
-
-   
-
-    /**
-     * Resolve entry data
-     * 
-     * @param sourceEntry
-     *            entry to be resolved
-     * @return resolved entry
-     * @throws ServiceException
-     * @throws ConnectionException
-     * @throws ResolveException
-     */
-    private InternalData resolveEntryData(InternalData sourceEntry) throws ServiceException, ConnectionException,
-            ResolveException {
-        // Load data if any
-        ResolveContent resolveContent = ContentComponentLocator.getInstance().getComponent().getResolveContent();
-
-        ServiceRequest<ContentEntryMsg> rq = new ServiceRequest<ContentEntryMsg>(super.getContext());
-        ContentEntryMsg requestMessage = new ContentEntryMsg();
-        requestMessage.setContentEntry(sourceEntry);
-        rq.setRequestMessage(requestMessage);
-        ServiceResponse<ContentEntryMsg> resolveContentEntryData = resolveContent.resolveContentEntryData(rq);
-        ContentEntryElement contentEntry = resolveContentEntryData.getResponseMessage().getContentEntry();
-        sourceEntry = (InternalData) contentEntry;
-
-        sourceEntry.getContentRelations().size();
-
-        return sourceEntry;
-    }
-
-    /**
-     * Copy data from source to target
-     * 
-     * @param sourceEntry
-     *            source
-     * @param targetItem
-     *            target
-     */
-    private void copyMasterData(InternalData sourceEntry, InternalData targetItem) {
-        ContentMaster sourceMaster = sourceEntry.getMaster();
-        ContentMaster targetMaster = targetItem.getMaster();
-        if (sourceMaster == null)
-            return;
-
-        targetMaster.setDatatypeState(DatatypeState.INITIALIZED);
-        targetMaster.setDescription(sourceMaster.getDescription());
-        targetMaster.setOwner(sourceMaster.getOwner());
-
     }
 
     /**
@@ -239,46 +229,83 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
      */
     private ContentFolder resolveFolderStructure(String path) throws ResolveException, PersistenceException,
             ProduceException {
-        ContentFolder folder = (ContentFolder) this.resolveContentByPath(path);
 
-        if (folder != null) {
-            return folder;
-        }
+        ContentFolder parentfolder = null;
+        String currentPath = path;
 
-        ContentFolder parentFolder = null;
-        if (path.contains(PATH_SEPARATOR)) {
-            // Separate path for recursively call
-            // org/nabucco/profile
+        // Search for the existing folder
+        while (parentfolder == null) {
+            parentfolder = (ContentFolder) this.resolveContentByPath(currentPath);
 
-            // FolderPath = org/nabucco/
-            String folderPath = path.substring(0, path.lastIndexOf(PATH_SEPARATOR));
-            // Path = profile
-            path = path.substring(path.lastIndexOf(PATH_SEPARATOR) + 1, path.length());
-
-            parentFolder = this.resolveFolderStructure(folderPath);
-            if (parentFolder.getDatatypeState().equals(DatatypeState.PERSISTENT)) {
-                parentFolder.setDatatypeState(DatatypeState.MODIFIED);
+            if (parentfolder != null) {
+                break;
+            } else {
+                if (currentPath.isEmpty()) {
+                    break;
+                } else {
+                    if (currentPath.contains(PATH_SEPARATOR)) {
+                        currentPath = currentPath.substring(0, currentPath.lastIndexOf(PATH_SEPARATOR));
+                    } else {
+                        break;
+                    }
+                }
             }
         }
 
-        folder = (ContentFolder) produceContentElement(ContentEntryType.FOLDER);
-        folder.setName(path);
-        folder.getMaster().setName(path);
-
-        folder = (ContentFolder) maintainContentEntry(folder);
-
-        // Create connection from parent if any
-        if (parentFolder != null) {
-            ContentRelation relation = new ContentRelation();
-            relation.setDatatypeState(DatatypeState.INITIALIZED);
-            relation.setTarget(folder);
-            parentFolder.getContentRelations().add(relation);
-            parentFolder.setDatatypeState(DatatypeState.MODIFIED);
-            parentFolder = (ContentFolder) maintainContentEntry(parentFolder);
+        String producePath = null;
+        if (parentfolder != null) {
+            producePath = path.substring(currentPath.length(), path.length());
+        } else {
+            producePath = path;
         }
 
-        return folder;
+        Queue<String> folderNameList = new LinkedList<String>();
+        String[] tokens = producePath.split(PATH_SEPARATOR);
+        for (String token : tokens) {
+            if (!token.isEmpty()) {
+                folderNameList.add(token);
+            }
+        }
 
+        Queue<ContentFolder> folderLinkList = new LinkedList<ContentFolder>();
+        if (parentfolder != null) {
+            folderLinkList.add(parentfolder);
+        }
+
+        // Produce folders
+        while (!folderNameList.isEmpty()) {
+            String folderName = null;
+
+            folderName = folderNameList.poll();
+
+            ContentFolder folder = (ContentFolder) this.produceContentElement(ContentEntryType.FOLDER);
+            folder.setName(folderName);
+            folder.getMaster().setName(folderName);
+            folder = this.maintainContentEntry(folder);
+            folderLinkList.add(folder);
+        }
+
+        ContentFolder retVal = null;
+
+        // Create relations
+        while (!folderLinkList.isEmpty()) {
+
+            ContentFolder source = folderLinkList.poll();
+            ContentFolder target = folderLinkList.peek();
+
+            if (target == null) {
+                retVal = source;
+                break;
+            }
+            ContentRelation relation = new ContentRelation();
+            relation.setDatatypeState(DatatypeState.INITIALIZED);
+            relation.setTarget(target);
+            source.getContentRelations().add(relation);
+            source.setDatatypeState(DatatypeState.MODIFIED);
+            this.maintainContentEntry(source);
+        }
+
+        return retVal;
     }
 
     /**
@@ -299,39 +326,62 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
         }
 
         return contentEntry;
-        
-        
-        
+
     }
 
+    // /**
+    // * Maintain the content entry to the database.
+    // *
+    // * @param contentEntry
+    // * the content entry to persist
+    // *
+    // * @return the persisted entry
+    // *
+    // * @throws PersistenceException
+    // * when the entry cannot be persisted
+    // */
+    // private ContentEntryElement maintainContentEntry(ContentEntryElement contentEntry) throws
+    // PersistenceException {
+    //
+    // MaintainUtility utility = new MaintainUtility(super.getPersistenceManager(),
+    // super.getContext());
+    //
+    // contentEntry = utility.maintainContentEntry(contentEntry);
+    //
+    // return contentEntry;
+    // }
+    //
+
     /**
-     * Maintain the content entry to the database.
+     * Maintain the given content entry to the database.
      * 
-     * @param contentEntry
-     *            the content entry to persist
+     * @param entry
+     *            the entry to maintain
      * 
-     * @return the persisted entry
+     * @return the maintained entry
      * 
-     * @throws PersistenceException
-     *             when the entry cannot be persisted
+     * @throws Exception
+     *             when the maintain fails
      */
-    private ContentEntryElement maintainContentEntry(ContentEntryElement contentEntry) throws PersistenceException {
+    @SuppressWarnings("unchecked")
+    private <T extends ContentEntryElement> T maintainContentEntry(T entry) throws PersistenceException {
 
         try {
             MaintainContent maintainContent;
             maintainContent = ContentComponentLocator.getInstance().getComponent().getMaintainContent();
+            ServiceRequest<ContentEntryMsg> rq = new ServiceRequest<ContentEntryMsg>(this.getContext());
 
-            ServiceRequest<ContentEntryMsg> rq = new ServiceRequest<ContentEntryMsg>(super.getContext());
-            ContentEntryMsg requestMessage = new ContentEntryMsg();
-            requestMessage.setContentEntry(contentEntry);
-            rq.setRequestMessage(requestMessage);
-            ServiceResponse<ContentEntryMsg> maintainContentEntry = maintainContent.maintainContentEntry(rq);
+            ContentEntryMsg msg = new ContentEntryMsg();
+            msg.setContentEntry(entry);
+            rq.setRequestMessage(msg);
 
-            return maintainContentEntry.getResponseMessage().getContentEntry();
+            ServiceResponse<ContentEntryMsg> rs = maintainContent.maintainContentEntry(rq);
+
+            return (T) rs.getResponseMessage().getContentEntry();
         } catch (ServiceException e) {
-            throw new PersistenceException("Cannot maintain item", e);
+            throw new PersistenceException("Cannot maintain", e);
         } catch (ConnectionException e) {
-            throw new PersistenceException("Cannot create connection", e);
+            throw new PersistenceException("Cannot maintain", e);
         }
     }
 
@@ -370,4 +420,5 @@ public class MaintainContentEntryByPathServiceHandlerImpl extends MaintainConten
             throw new ProduceException("Cannot locate conntection", e);
         }
     }
+
 }

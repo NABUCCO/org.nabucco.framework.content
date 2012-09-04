@@ -17,6 +17,8 @@
 package org.nabucco.framework.content.facade.service.maintain; 
 
 import org.nabucco.framework.base.facade.exception.service.MaintainException;
+import org.nabucco.framework.content.facade.message.ContentEntryAssignmentMaintainRq;
+import org.nabucco.framework.content.facade.message.ContentEntryAssignmentMsg;
 import org.nabucco.framework.content.facade.message.ContentEntryMaintainPathMsg;
 import org.nabucco.framework.content.facade.message.ContentEntryMsg;
 
@@ -33,6 +35,15 @@ public Service MaintainContent {
 	@JoinPoint				org.nabucco.aspect.relating
 	@JoinPoint				org.nabucco.aspect.resolving
 	@Description			Maintain the given content entry.
+	public ContentEntryAssignmentMsg maintainContentEntryAssignment(ContentEntryAssignmentMaintainRq msg) throws MaintainException;
+	
+	
+	@ManualImplementation
+	@JoinPoint				org.nabucco.aspect.permissioning
+	@JoinPoint				org.nabucco.aspect.validating
+	@JoinPoint				org.nabucco.aspect.relating
+	@JoinPoint				org.nabucco.aspect.resolving
+	@Description			Maintain the given content entry.
 	public ContentEntryMsg maintainContentEntry(ContentEntryMsg msg) throws MaintainException;
 	
 	
@@ -42,5 +53,6 @@ public Service MaintainContent {
 	@JoinPoint				org.nabucco.aspect.resolving
     @Description			Maintain a single content entry to the given path
 	public ContentEntryMsg maintainContentEntryByPath(ContentEntryMaintainPathMsg msg) throws MaintainException;
+	
 
 }

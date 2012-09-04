@@ -16,6 +16,7 @@
 */
 package org.nabucco.framework.content.facade.message; 
 
+import org.nabucco.framework.base.facade.datatype.Flag;
 import org.nabucco.framework.content.facade.datatype.ContentEntryElement;
 import org.nabucco.framework.content.facade.datatype.path.ContentEntryPath;
 
@@ -31,5 +32,8 @@ public Message ContentEntryMaintainPathMsg {
 	
 	@Description		The entry to be maintained to the given path
 	private Datatype ContentEntryElement[1] entry;
+	
+	@Description		Indicates if the source item (or reference to it) should be removed (moved) to the aim directory
+	private Basetype Flag[0..1] removeSource; 
 	
 }

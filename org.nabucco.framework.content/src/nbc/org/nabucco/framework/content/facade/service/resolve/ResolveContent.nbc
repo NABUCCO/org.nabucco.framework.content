@@ -17,6 +17,8 @@
 package org.nabucco.framework.content.facade.service.resolve; 
 
 import org.nabucco.framework.base.facade.exception.service.ResolveException;
+import org.nabucco.framework.content.facade.message.ContentEntryAssignmentMsg;
+import org.nabucco.framework.content.facade.message.ContentEntryAssignmentResolveRq;
 import org.nabucco.framework.content.facade.message.ContentEntryMsg;
 import org.nabucco.framework.content.facade.message.ContentEntryPathMsg;
 
@@ -27,6 +29,13 @@ import org.nabucco.framework.content.facade.message.ContentEntryPathMsg;
 @Description    Resolves content entries and allows for content loading.
 public Service ResolveContent {
 	
+	@ManualImplementation
+	@JoinPoint				org.nabucco.aspect.permissioning
+	@JoinPoint				org.nabucco.aspect.validating
+	@JoinPoint				org.nabucco.aspect.resolving
+    @Description			Resolves a single content entry assignment
+	public ContentEntryAssignmentMsg resolveContentEntryAssignment(ContentEntryAssignmentResolveRq msg) throws ResolveException;
+
 	@ManualImplementation
 	@JoinPoint				org.nabucco.aspect.permissioning
 	@JoinPoint				org.nabucco.aspect.validating

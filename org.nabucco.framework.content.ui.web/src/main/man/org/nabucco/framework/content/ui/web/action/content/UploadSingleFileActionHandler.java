@@ -19,12 +19,14 @@ package org.nabucco.framework.content.ui.web.action.content;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nabucco.framework.base.facade.datatype.DatatypeState;
+import org.nabucco.framework.base.facade.datatype.Flag;
 import org.nabucco.framework.base.facade.datatype.NabuccoDatatype;
 import org.nabucco.framework.base.facade.exception.client.ClientException;
 import org.nabucco.framework.base.facade.exception.client.action.ActionException;
 import org.nabucco.framework.base.facade.exception.service.MaintainException;
 import org.nabucco.framework.base.facade.exception.service.ResolveException;
-import org.nabucco.framework.base.ui.web.action.handler.work.editor.ControlDataUploadHandler;
+import org.nabucco.framework.base.ui.web.action.handler.work.editor.ImageUploadHandler;
 import org.nabucco.framework.base.ui.web.session.NabuccoWebSession;
 import org.nabucco.framework.content.facade.datatype.ContentEntryElement;
 import org.nabucco.framework.content.facade.datatype.InternalData;
@@ -43,7 +45,7 @@ import org.nabucco.framework.content.ui.web.communication.resolve.ResolveContent
  * 
  * @author Leonid Agranovskiy, PRODYNA AG
  */
-public class UploadSingleFileActionHandler extends ControlDataUploadHandler<InternalData> {
+public class UploadSingleFileActionHandler extends ImageUploadHandler<InternalData> {
 
     public final static String ID = "Content.UploadSingleFile";
 
@@ -82,9 +84,10 @@ public class UploadSingleFileActionHandler extends ControlDataUploadHandler<Inte
             ContentEntryMaintainPathMsg message = new ContentEntryMaintainPathMsg();
             message.setPath(new ContentEntryPath(uploadPath));
             message.setEntry(sourceEntry);
+            message.setRemoveSource(new Flag(true));
             ContentEntryMsg maintainContentEntryByPath = maintainContent.maintainContentEntryByPath(message, session);
             ContentEntryElement targetEntry = maintainContentEntryByPath.getContentEntry();
-
+            targetEntry.setDatatypeState(DatatypeState.MODIFIED);
 
             ArrayList<NabuccoDatatype> retVal = new ArrayList<NabuccoDatatype>();
             retVal.add(targetEntry);
@@ -123,6 +126,5 @@ public class UploadSingleFileActionHandler extends ControlDataUploadHandler<Inte
             throw new ClientException("Cannot resolve path", e);
         }
     }
-
 
 }

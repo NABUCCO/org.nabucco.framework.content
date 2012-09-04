@@ -80,8 +80,13 @@ public abstract Datatype ContentEntryElement extends ContentEntry {
 	@CodePath			nabucco.framework.content.categorytype
 	@Description		Category Type of the Content Entry.
 	private Datatype Code[0..1] contentCategoryType;
-
+	
+	@CodePath			nabucco.framework.content.usagetype
+	@Description		The type of usage of content
+	private Datatype Code[0..1] usageType; 
+	
 	@Description		List of Content Relations.
 	private Datatype ContentRelation[0..*] contentRelations;
+	
 
 }

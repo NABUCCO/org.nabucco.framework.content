@@ -17,6 +17,7 @@
 package org.nabucco.framework.content.facade.component; 
 
 import org.nabucco.framework.content.facade.datatype.ContentData;
+import org.nabucco.framework.content.facade.datatype.ContentEntryAssignmentElement;
 import org.nabucco.framework.content.facade.datatype.ContentEntryElement;
 import org.nabucco.framework.content.facade.datatype.ContentFolder;
 import org.nabucco.framework.content.facade.datatype.ContentMaster;
@@ -39,6 +40,9 @@ public Component ContentComponent {
 	
 	@Description		Content Entry Master.
 	public persistent Datatype ContentMaster[0..*] contentMasters;
+	
+	@Referenceable
+	public persistent Datatype ContentEntryAssignmentElement[0..*] contentEntryAssignments;
 	
 	@Description		Abstract Content Entry.
 	public persistent Datatype ContentEntryElement[0..*] contentEntries;

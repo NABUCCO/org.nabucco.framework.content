@@ -15,6 +15,6 @@
 	<classpathentry kind="lib" path="/org.nabucco.framework.content/lib/web/log4j.jar"/>
 	<classpathentry kind="lib" path="/org.nabucco.framework.content/lib/web/servlet-api.jar"/>
 	<classpathentry kind="lib" path="/org.nabucco.framework.content/lib/web/org.nabucco.framework.base.facade.jar"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.content/lib/web/org.nabucco.framework.base.ui.web.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.content/lib/web/org.nabucco.framework.base.ui.web.jar" sourcepath="/org.nabucco.framework.content/lib/source/org.nabucco.framework.base.ui.web.sources.zip"/>
 	<classpathentry kind="output" path="out/ide"/>
 </classpath>

@@ -16,15 +16,14 @@
  */
 package org.nabucco.framework.content.impl.service.resolve;
 
-import java.util.List;
-
 import org.nabucco.framework.base.facade.datatype.content.ContentEntryType;
 import org.nabucco.framework.base.facade.exception.persistence.PersistenceException;
 import org.nabucco.framework.base.facade.exception.service.ResolveException;
-import org.nabucco.framework.base.impl.service.maintain.NabuccoQuery;
+import org.nabucco.framework.content.facade.datatype.ContentData;
 import org.nabucco.framework.content.facade.datatype.ContentEntryElement;
 import org.nabucco.framework.content.facade.datatype.InternalData;
 import org.nabucco.framework.content.facade.message.ContentEntryMsg;
+import org.nabucco.framework.content.impl.service.resolve.common.ResolveUtility;
 
 /**
  * ResolveContentEntryDataServiceHandlerImpl
@@ -49,8 +48,7 @@ public class ResolveContentEntryDataServiceHandlerImpl extends ResolveContentEnt
             rs.setContentEntry(entry);
 
         } catch (Exception e) {
-            throw new ResolveException(
-                    "Error resolving content entry with id '" + contentEntry.getId() + "'.", e);
+            throw new ResolveException("Error resolving content entry with id '" + contentEntry.getId() + "'.", e);
         }
 
         return rs;
@@ -73,17 +71,12 @@ public class ResolveContentEntryDataServiceHandlerImpl extends ResolveContentEnt
         switch (type) {
 
         case INTERNAL_DATA: {
-            NabuccoQuery<InternalData> query = super.getPersistenceManager().createQuery(
-                    "select i from InternalData i inner join fetch i.data d where i.id = :id");
-
-            query.setParameter(ContentEntryElement.ID, entry.getId());
-            List<InternalData> resultList = query.getResultList();
-            if (resultList.size() == 1) {
-                entry = resultList.get(0);
-            } else if (resultList.size() > 1) {
-                throw new PersistenceException("Non Unique result by resolving of entry data.");
+            ResolveUtility util = new ResolveUtility(this.getPersistenceManager(), super.getContext());
+            ContentData contentData = util.resolveInternalContentData((InternalData) entry);
+            if (contentData != null) {
+                InternalData internalDataEntry = (InternalData) entry;
+                internalDataEntry.setData(contentData);
             }
-
             break;
         }
 

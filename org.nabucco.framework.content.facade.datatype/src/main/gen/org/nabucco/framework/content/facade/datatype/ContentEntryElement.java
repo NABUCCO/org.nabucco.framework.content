@@ -1,18 +1,16 @@
 /*
  * Copyright 2012 PRODYNA AG
- *
- * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
+ * 
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of the License at
+ * 
  * http://www.opensource.org/licenses/eclipse-1.0.php or
  * http://www.nabucco.org/License.html
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.nabucco.framework.content.facade.datatype;
 
@@ -60,7 +58,7 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
 
     private static final String[] PROPERTY_CONSTRAINTS = { "l3,12;u0,n;m1,1;", "l0,n;u0,n;m1,1;", "l3,32;u0,n;m1,1;",
             "l0,n;u0,n;m1,1;", "l3,32;u0,n;m1,1;", "l0,255;u0,n;m0,1;", "m0,1;", "m1,1;", "l0,n;u0,n;m0,1;",
-            "l0,n;u0,n;m0,1;", "l0,n;u0,n;m1,1;", "m0,1;", "m0,1;", "m0,n;" };
+            "l0,n;u0,n;m0,1;", "l0,n;u0,n;m1,1;", "m0,1;", "m0,1;", "m0,1;", "m0,n;" };
 
     public static final String OWNER = "owner";
 
@@ -87,6 +85,8 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
     public static final String CONTENTENTRYTYPE = "contentEntryType";
 
     public static final String CONTENTCATEGORYTYPE = "contentCategoryType";
+
+    public static final String USAGETYPE = "usageType";
 
     public static final String CONTENTRELATIONS = "contentRelations";
 
@@ -136,6 +136,13 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
     private Long contentCategoryTypeRefId;
 
     protected static final String CONTENTCATEGORYTYPE_CODEPATH = "nabucco.framework.content.categorytype";
+
+    /** The type of usage of content */
+    private Code usageType;
+
+    private Long usageTypeRefId;
+
+    protected static final String USAGETYPE_CODEPATH = "nabucco.framework.content.usagetype";
 
     /** List of Content Relations. */
     private NabuccoList<ContentRelation> contentRelations;
@@ -202,6 +209,12 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
         if ((this.getContentCategoryTypeRefId() != null)) {
             clone.setContentCategoryTypeRefId(this.getContentCategoryTypeRefId());
         }
+        if ((this.getUsageType() != null)) {
+            clone.setUsageType(this.getUsageType().cloneObject());
+        }
+        if ((this.getUsageTypeRefId() != null)) {
+            clone.setUsageTypeRefId(this.getUsageTypeRefId());
+        }
         if ((this.contentRelations != null)) {
             clone.contentRelations = this.contentRelations.cloneCollection();
         }
@@ -265,8 +278,10 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
                 PROPERTY_CONSTRAINTS[11], false, PropertyAssociationType.COMPONENT, CONTENTENTRYTYPE_CODEPATH));
         propertyMap.put(CONTENTCATEGORYTYPE, PropertyDescriptorSupport.createDatatype(CONTENTCATEGORYTYPE, Code.class,
                 17, PROPERTY_CONSTRAINTS[12], false, PropertyAssociationType.COMPONENT, CONTENTCATEGORYTYPE_CODEPATH));
+        propertyMap.put(USAGETYPE, PropertyDescriptorSupport.createDatatype(USAGETYPE, Code.class, 18,
+                PROPERTY_CONSTRAINTS[13], false, PropertyAssociationType.COMPONENT, USAGETYPE_CODEPATH));
         propertyMap.put(CONTENTRELATIONS, PropertyDescriptorSupport.createCollection(CONTENTRELATIONS,
-                ContentRelation.class, 18, PROPERTY_CONSTRAINTS[13], false, PropertyAssociationType.COMPOSITION));
+                ContentRelation.class, 19, PROPERTY_CONSTRAINTS[14], false, PropertyAssociationType.COMPOSITION));
         return new NabuccoPropertyContainer(propertyMap);
     }
 
@@ -300,6 +315,8 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
                 this.getContentEntryType(), this.contentEntryTypeRefId));
         properties.add(super.createProperty(ContentEntryElement.getPropertyDescriptor(CONTENTCATEGORYTYPE),
                 this.getContentCategoryType(), this.contentCategoryTypeRefId));
+        properties.add(super.createProperty(ContentEntryElement.getPropertyDescriptor(USAGETYPE), this.getUsageType(),
+                this.usageTypeRefId));
         properties.add(super.createProperty(ContentEntryElement.getPropertyDescriptor(CONTENTRELATIONS),
                 this.contentRelations, null));
         return properties;
@@ -349,6 +366,9 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
             return true;
         } else if ((property.getName().equals(CONTENTCATEGORYTYPE) && (property.getType() == Code.class))) {
             this.setContentCategoryType(((Code) property.getInstance()));
+            return true;
+        } else if ((property.getName().equals(USAGETYPE) && (property.getType() == Code.class))) {
+            this.setUsageType(((Code) property.getInstance()));
             return true;
         } else if ((property.getName().equals(CONTENTRELATIONS) && (property.getType() == ContentRelation.class))) {
             this.contentRelations = ((NabuccoList<ContentRelation>) property.getInstance());
@@ -447,6 +467,16 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
                 return false;
         } else if ((!this.contentCategoryTypeRefId.equals(other.contentCategoryTypeRefId)))
             return false;
+        if ((this.usageType == null)) {
+            if ((other.usageType != null))
+                return false;
+        } else if ((!this.usageType.equals(other.usageType)))
+            return false;
+        if ((this.usageTypeRefId == null)) {
+            if ((other.usageTypeRefId != null))
+                return false;
+        } else if ((!this.usageTypeRefId.equals(other.usageTypeRefId)))
+            return false;
         return true;
     }
 
@@ -470,6 +500,8 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
         result = ((PRIME * result) + ((this.contentCategoryType == null) ? 0 : this.contentCategoryType.hashCode()));
         result = ((PRIME * result) + ((this.contentCategoryTypeRefId == null) ? 0 : this.contentCategoryTypeRefId
                 .hashCode()));
+        result = ((PRIME * result) + ((this.usageType == null) ? 0 : this.usageType.hashCode()));
+        result = ((PRIME * result) + ((this.usageTypeRefId == null) ? 0 : this.usageTypeRefId.hashCode()));
         return result;
     }
 
@@ -905,6 +937,47 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
     }
 
     /**
+     * The type of usage of content
+     *
+     * @param usageType the Code.
+     */
+    public void setUsageType(Code usageType) {
+        this.usageType = usageType;
+        if ((usageType != null)) {
+            this.setUsageTypeRefId(usageType.getId());
+        } else {
+            this.setUsageTypeRefId(null);
+        }
+    }
+
+    /**
+     * The type of usage of content
+     *
+     * @return the Code.
+     */
+    public Code getUsageType() {
+        return this.usageType;
+    }
+
+    /**
+     * Getter for the UsageTypeRefId.
+     *
+     * @return the Long.
+     */
+    public Long getUsageTypeRefId() {
+        return this.usageTypeRefId;
+    }
+
+    /**
+     * Setter for the UsageTypeRefId.
+     *
+     * @param usageTypeRefId the Long.
+     */
+    public void setUsageTypeRefId(Long usageTypeRefId) {
+        this.usageTypeRefId = usageTypeRefId;
+    }
+
+    /**
      * List of Content Relations.
      *
      * @return the NabuccoList<ContentRelation>.
@@ -951,5 +1024,14 @@ public abstract class ContentEntryElement extends ContentEntry implements Dataty
      */
     public static CodePath getContentCategoryTypeCodePath() {
         return new CodePath(CONTENTCATEGORYTYPE_CODEPATH);
+    }
+
+    /**
+     * Getter for the UsageTypeCodePath.
+     *
+     * @return the CodePath.
+     */
+    public static CodePath getUsageTypeCodePath() {
+        return new CodePath(USAGETYPE_CODEPATH);
     }
 }

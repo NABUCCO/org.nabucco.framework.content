@@ -17,7 +17,9 @@
 package org.nabucco.framework.content.facade.service.produce; 
 
 import org.nabucco.framework.base.facade.exception.service.ProduceException;
+import org.nabucco.framework.content.facade.message.ContentEntryAssignmentMsg;
 import org.nabucco.framework.content.facade.message.ContentEntryMsg;
+import org.nabucco.framework.content.facade.message.produce.ContentEntryAssignmentPrototypeRq;
 import org.nabucco.framework.content.facade.message.produce.ContentEntryPrototypeRq;
 
 @Author         Nicolas Moser
@@ -31,5 +33,12 @@ public Service ProduceContent {
 	@JoinPoint				org.nabucco.aspect.initializing
 	@Description			Produce a new Content Entry.
 	public ContentEntryMsg produceContentEntry(ContentEntryPrototypeRq rq) throws ProduceException;
+	
+	@ManualImplementation
+	@JoinPoint				org.nabucco.aspect.initializing
+	@Description			Produce a new Content Entry Assignment.
+	public ContentEntryAssignmentMsg produceContentEntryAssignment(ContentEntryAssignmentPrototypeRq rq) throws ProduceException;
+	
+	
 	
 }

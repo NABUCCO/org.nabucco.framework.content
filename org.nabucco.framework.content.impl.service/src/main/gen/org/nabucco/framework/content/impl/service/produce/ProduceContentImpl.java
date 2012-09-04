@@ -1,18 +1,16 @@
 /*
  * Copyright 2012 PRODYNA AG
- *
- * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
+ * 
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of the License at
+ * 
  * http://www.opensource.org/licenses/eclipse-1.0.php or
  * http://www.nabucco.org/License.html
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.nabucco.framework.content.impl.service.produce;
 
@@ -28,7 +26,9 @@ import org.nabucco.framework.base.facade.service.injection.InjectionProvider;
 import org.nabucco.framework.base.impl.service.ServiceSupport;
 import org.nabucco.framework.base.impl.service.maintain.PersistenceManager;
 import org.nabucco.framework.base.impl.service.maintain.PersistenceManagerFactory;
+import org.nabucco.framework.content.facade.message.ContentEntryAssignmentMsg;
 import org.nabucco.framework.content.facade.message.ContentEntryMsg;
+import org.nabucco.framework.content.facade.message.produce.ContentEntryAssignmentPrototypeRq;
 import org.nabucco.framework.content.facade.message.produce.ContentEntryPrototypeRq;
 import org.nabucco.framework.content.facade.service.produce.ProduceContent;
 
@@ -48,6 +48,8 @@ public class ProduceContentImpl extends ServiceSupport implements ProduceContent
 
     private ProduceContentEntryServiceHandler produceContentEntryServiceHandler;
 
+    private ProduceContentEntryAssignmentServiceHandler produceContentEntryAssignmentServiceHandler;
+
     private EntityManager entityManager;
 
     /** Constructs a new ProduceContentImpl instance. */
@@ -66,6 +68,12 @@ public class ProduceContentImpl extends ServiceSupport implements ProduceContent
             this.produceContentEntryServiceHandler.setPersistenceManager(persistenceManager);
             this.produceContentEntryServiceHandler.setLogger(super.getLogger());
         }
+        this.produceContentEntryAssignmentServiceHandler = injector.inject(ProduceContentEntryAssignmentServiceHandler
+                .getId());
+        if ((this.produceContentEntryAssignmentServiceHandler != null)) {
+            this.produceContentEntryAssignmentServiceHandler.setPersistenceManager(persistenceManager);
+            this.produceContentEntryAssignmentServiceHandler.setLogger(super.getLogger());
+        }
     }
 
     @Override
@@ -78,6 +86,7 @@ public class ProduceContentImpl extends ServiceSupport implements ProduceContent
         if ((ASPECTS == null)) {
             ASPECTS = new HashMap<String, String[]>();
             ASPECTS.put("produceContentEntry", new String[] { "org.nabucco.aspect.initializing" });
+            ASPECTS.put("produceContentEntryAssignment", new String[] { "org.nabucco.aspect.initializing" });
         }
         String[] aspects = ASPECTS.get(operationName);
         if ((aspects == null)) {
@@ -97,6 +106,20 @@ public class ProduceContentImpl extends ServiceSupport implements ProduceContent
         this.produceContentEntryServiceHandler.init();
         rs = this.produceContentEntryServiceHandler.invoke(rq);
         this.produceContentEntryServiceHandler.finish();
+        return rs;
+    }
+
+    @Override
+    public ServiceResponse<ContentEntryAssignmentMsg> produceContentEntryAssignment(
+            ServiceRequest<ContentEntryAssignmentPrototypeRq> rq) throws ProduceException {
+        if ((this.produceContentEntryAssignmentServiceHandler == null)) {
+            super.getLogger().error("No service implementation configured for produceContentEntryAssignment().");
+            throw new InjectionException("No service implementation configured for produceContentEntryAssignment().");
+        }
+        ServiceResponse<ContentEntryAssignmentMsg> rs;
+        this.produceContentEntryAssignmentServiceHandler.init();
+        rs = this.produceContentEntryAssignmentServiceHandler.invoke(rq);
+        this.produceContentEntryAssignmentServiceHandler.finish();
         return rs;
     }
 }
